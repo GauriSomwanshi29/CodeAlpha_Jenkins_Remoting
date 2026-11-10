@@ -1,0 +1,26 @@
+services:
+  jenkins-controller:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: jenkins-controller
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+  jenkins-agent:
+    image: jenkins/inbound-agent:latest-jdk21
+    container_name: jenkins-agent
+    restart: unless-stopped
+    init: true
+    depends_on:
+      - jenkins-controller
+    environment:
+      JENKINS_URL: http://jenkins-controller:8080/
+      JENKINS_AGENT_NAME: remote-agent-2
+      JENKINS_SECRET: ${JENKINS_AGENT_SECRET}
+      JENKINS_AGENT_WORKDIR: /home/jenkins/agent
+      JENKINS_WEB_SOCKET: "true"
+
+volumes:
+  jenkins_home:
